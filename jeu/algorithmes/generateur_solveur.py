@@ -48,27 +48,28 @@ def backtracking(grille: list, taille: int, caracteres: str, taille_bloc: int) -
     return True
 
 
-def set_difficulte(grille : list, difficulte : str, difficultes : set, caracteres : str, taille : int, taille_bloc : int) -> list:
+def set_difficulte(grille: list, difficulte: str, difficultes: set, caracteres: str, taille: int, taille_bloc: int) -> list:
     """
         Selon la configuration de la difficulté, dispose sur la grille des ".". Traite sur une copie profonde
         de la grille pour vérifier si il y a toujours une possibilité.
     """
-    positions = [(i, j) for i in range(len(grille)) for j in range(len(grille))]
+    positions = [(i, j) for i in range(len(grille))
+                 for j in range(len(grille))]
     shuffle(positions)
     nb_cases = int((difficultes[difficulte]/100)*taille**2)
-    
-    while nb_cases>0 : 
-        i,j = positions.pop()
+
+    while nb_cases > 0:
+        i, j = positions.pop()
         caractere = grille[i][j]
         grille[i][j] = "."
         grille_copie = copy.deepcopy(grille)
-        
+
         if not backtracking(grille_copie, taille, caracteres, taille_bloc):
             grille[i][j] = caractere
-        else : nb_cases-=1
-        
+        else:
+            nb_cases -= 1
+
     return grille
-        
 
 
 def generateur_grille(taille: int, caracteres: str) -> list:
