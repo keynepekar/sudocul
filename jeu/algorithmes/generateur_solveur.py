@@ -30,9 +30,10 @@ def possibilites(grille: list, caracteres: str, pos: tuple, taille_bloc: int) ->
     return list(set(caracteres) ^ trouve)
 
 
-def backtracking(grille: list, taille: int, caracteres: str, taille_bloc: int) -> list:
+def backtracking(grille: list, taille: int, caracteres: str, taille_bloc: int) -> bool:
     """
         Fonction récursive complétant une grille.
+        Traite sur la grille donnée et renvoie en booléen si backtracking réussi.
     """
     for i in range(taille):
         for j in range(taille):

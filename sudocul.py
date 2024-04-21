@@ -4,15 +4,27 @@
 """
 
 from jeu.algorithmes.generateur_solveur import *
+from jeu.algorithmes.sauvegarde import *
 from jeu.configuration import *
+from jeu.interface.interface import *
 
-grille = generateur_grille(9, caracteres)
+"""
+taille = 9
 
-for i in grille:
-    print(*i)
+grille = generateur_grille(taille, caracteres)
+affichage_console(grille)
 
 print()
-grille2 = set_difficulte(grille, "Extrême", difficultes, caracteres, 9, 3)
+grille2 = set_difficulte(grille, "Extrême", difficultes, caracteres, taille, 3)
+affichage_console(grille2)
+"""
 
-for i in grille2:
-    print(*i)
+grille = lire_sauvegarde()
+affichage_console(grille)
+
+print()
+
+backtracking(grille, 9, caracteres, 3)
+affichage_console(grille)
+
+sauvegarde_grille(grille)
