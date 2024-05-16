@@ -72,6 +72,13 @@ def interface(largeur=700, hauteur=700, taille=9, grille_=None):
                 case_i = pos[1] // cell_size
                 case_j = pos[0] // cell_size
                 print("Clic de souris sur la case :", (case_i, case_j))
+                
+                # Mettre à jour la case sélectionnée
+                case_selectionnee = (case_i, case_j)
+                # Affichage
+                win.fill((255, 255, 255))
+                grille(win, taille, grille_, cases_modifiables, case_selectionnee)
+                pygame.display.update()
 
                 # Vérifier si la case est modifiable
                 if (case_i, case_j) in cases_modifiables:
@@ -107,3 +114,8 @@ if __name__ == "__main__":
               ["3", "4", "-", "8", "9"]
              ]
     interface(600, 600, 5, grille_)
+
+
+# Sources
+# https://geekyhumans.com/fr/voici-le-jeu-sudoku-en-code-source-python/
+# ChatGPT
