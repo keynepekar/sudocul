@@ -6,7 +6,7 @@ def grille(win, taille=9, grille_sudoku=None, cases_modifiables=None, case_selec
     Crée une grille avec un nombre de lignes et un nombre de colonnes.
     """
     if grille_sudoku is None:
-        grille_sudoku = [["-"]*taille for _ in range(taille)]
+        grille_sudoku = [["."]*taille for _ in range(taille)]
 
     if cases_modifiables is None:
         cases_modifiables = set()
@@ -33,7 +33,7 @@ def grille(win, taille=9, grille_sudoku=None, cases_modifiables=None, case_selec
                 pygame.draw.rect(win, (187, 222, 251), rect)
 
             # Afficher les nombres dans les cases
-            if grille_sudoku[i][j] != "-":
+            if grille_sudoku[i][j] != ".":
                 color = (255, 0, 0) if (i, j) in cases_modifiables else (0, 0, 0)
                 text = font.render(str(grille_sudoku[i][j]), True, color)
                 text_rect = text.get_rect(center=rect.center)
@@ -58,7 +58,7 @@ def interface(largeur=700, hauteur=700, taille=9, grille_=None):
     # Identifier les cases modifiables dans la grille
     for i in range(taille):
         for j in range(taille):
-            if grille_[i][j] == "-":
+            if grille_[i][j] == ".":
                 cases_modifiables.add((i, j))
 
     running = True
@@ -105,16 +105,6 @@ def interface(largeur=700, hauteur=700, taille=9, grille_=None):
 
     pygame.quit()
     sys.exit()
-
-if __name__ == "__main__":
-    grille_ = [["1", "-", "3", "4", "6"],
-              ["5", "6", "-", "8", "7"],
-              ["-", "9", "1", "2", "8"],
-              ["3", "4", "5", "-", "9"],
-              ["3", "4", "-", "8", "9"]
-             ]
-    interface(600, 600, 5, grille_)
-
 
 # Sources
 # https://geekyhumans.com/fr/voici-le-jeu-sudoku-en-code-source-python/
