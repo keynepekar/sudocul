@@ -1,7 +1,24 @@
 import pygame
 import sys
-from jeu.algorithmes.sauvegarde import *
 from jeu.algorithmes.generateur_solveur import *
+from jeu.algorithmes.sauvegarde import *
+
+class Bouton:
+    def __init__(self, x, y, largeur, hauteur, texte, couleur=(0, 0, 0), couleur_texte=(255, 255, 255)):
+        self.rect = pygame.Rect(x, y, largeur, hauteur)
+        self.texte = texte
+        self.couleur = couleur
+        self.couleur_texte = couleur_texte
+        self.police = pygame.font.Font(None, 24)
+
+    def dessiner(self, surface):
+        # Dessiner le rectangle du bouton
+        pygame.draw.rect(surface, self.couleur, self.rect)
+        # Dessiner le texte
+        texte_surface = self.police.render(self.texte, True, self.couleur_texte)
+        texte_rect = texte_surface.get_rect(center=self.rect.center)
+        surface.blit(texte_surface, texte_rect)
+
 
 def grille(win, taille=9, grille_sudoku=None, cases_modifiables=None, case_selectionnee=None): 
     """
@@ -44,10 +61,94 @@ def grille(win, taille=9, grille_sudoku=None, cases_modifiables=None, case_selec
 
     pygame.display.update()
 
+def set_difficulte():
+    pygame.init()
+    pygame.display.set_caption("Choix de la difficulté")
+    win = pygame.display.set_mode((500, 500))
+
+    # Créer des boutons
+    btn_facile = Bouton(50, 50, 150, 50, "Facile")
+    btn_moyen = Bouton(200, 50, 150, 50, "Moyen")
+    btn_difficile = Bouton(50, 100, 150, 50, "Difficile")
+    btn_extreme = Bouton(200, 100, 150, 50, "Extreme")
+
+    running=True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                load=False
+                running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                # Détecter les clics de souris
+                pos = pygame.mouse.get_pos()
+                case_i = pos[1] 
+                case_j = pos[0]
+                if btn_facile.collidepoint(pos):
+                    difficulte = "Facile"
+                    running = False
+                if btn_moyen.collidepoint(pos):
+                    difficulte = "Moyen"
+                    running = False
+                if btn_difficile.collidepoint(pos):
+                    difficulte = "Difficile"
+                    running = False
+                if btn_extreme.collidepoint(pos):
+                    difficulte = "Difficile"
+                    running = False
+
+            #Dessiner les boutons
+            btn_facile.dessiner(win)
+            btn_moyen.dessiner(win)
+            btn_difficile.dessiner(win)
+            btn_extreme.dessiner(win)
+
+            pygame.display.update()  
+    # relier à la config de la difficulté
+    pygame.quit()  
+
+def charger_partie():
+    pygame.init()
+    pygame.display.set_caption("Chargement de la partie ?")
+    win = pygame.display.set_mode((500, 500))
+    
+    # Créer des boutons
+    btn_oui = Bouton(50, 50, 150, 50, "Oui")
+    btn_non = Bouton(50, 150, 150, 50, "Non")
+
+    running=True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                load=False
+                running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                # Détecter les clics de souris
+                pos = pygame.mouse.get_pos()
+                case_i = pos[1] 
+                case_j = pos[0]
+                if btn_oui.collidepoint(pos):
+                    load=True
+                    running = False
+                if btn_non.collidepoint(pos):
+                    load=False
+                    running = False
+            #Dessiner les boutons
+            btn_oui.dessiner(win)
+            btn_non.dessiner(win)
+
+            pygame.display.update()
+
+    pygame.quit()
+    return load
+
+
 def interface(largeur=700, hauteur=700, taille=9, grille_=None):
     """
     Crée et gère l'interface graphique (fenêtre) du Sudocul.
     """
+    load=charger_partie()
+    if (load==True):
+        grille_=lire_sauvegarde()
     pygame.init()
     cell_size = min(largeur // (taille + 2), hauteur // taille)  # Ajuster la largeur pour inclure les boutons
     largeur = cell_size * (taille + 2)  # Ajuster la largeur pour inclure les boutons
