@@ -1,7 +1,16 @@
 import pygame
 import sys
+import os
+
+# Chemin vers le répertoire parent contenant 'sudocul'
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+# Importation des programmes supplémentaires
 from jeu.algorithmes.generateur_solveur import *
 from jeu.algorithmes.sauvegarde import *
+from jeu.configuration import *
 
 class Bouton:
     def __init__(self, x, y, largeur, hauteur, texte, couleur=(0, 0, 0), couleur_texte=(255, 255, 255)):
@@ -26,7 +35,7 @@ def grille(win, taille=9, grille_sudoku=None, cases_modifiables=None, case_selec
     nombre de colonnes.
     """
     if grille_sudoku is None:
-        grille_sudoku = [["-"]*taille for _ in range(taille)]
+        grille_sudoku = [["."]*taille for _ in range(taille)]
 
     if cases_modifiables is None:
         cases_modifiables = set()
@@ -53,7 +62,7 @@ def grille(win, taille=9, grille_sudoku=None, cases_modifiables=None, case_selec
                 pygame.draw.rect(win, (187, 222, 251), rect)
 
             # Afficher les nombres dans les cases
-            if grille_sudoku[i][j] != "-":
+            if grille_sudoku[i][j] != ".":
                 color = (255, 0, 0) if (i, j) in cases_modifiables else (0, 0, 0)
                 text = font.render(str(grille_sudoku[i][j]), True, color)
                 text_rect = text.get_rect(center=rect.center)
@@ -61,11 +70,7 @@ def grille(win, taille=9, grille_sudoku=None, cases_modifiables=None, case_selec
 
     pygame.display.update()
 
-def set_difficulte():
-    pygame.init()
-    pygame.display.set_caption("Choix de la difficulté")
-    win = pygame.display.set_mode((500, 500))
-
+def choix_difficulte(win, largeur, hauteur):
     # Créer des boutons
     btn_facile = Bouton(50, 50, 150, 50, "Facile")
     btn_moyen = Bouton(200, 50, 150, 50, "Moyen")
@@ -83,16 +88,16 @@ def set_difficulte():
                 pos = pygame.mouse.get_pos()
                 case_i = pos[1] 
                 case_j = pos[0]
-                if btn_facile.collidepoint(pos):
+                if btn_facile.rect.collidepoint(pos):
                     difficulte = "Facile"
                     running = False
-                if btn_moyen.collidepoint(pos):
+                if btn_moyen.rect.collidepoint(pos):
                     difficulte = "Moyen"
                     running = False
-                if btn_difficile.collidepoint(pos):
+                if btn_difficile.rect.collidepoint(pos):
                     difficulte = "Difficile"
                     running = False
-                if btn_extreme.collidepoint(pos):
+                if btn_extreme.rect.collidepoint(pos):
                     difficulte = "Difficile"
                     running = False
 
@@ -104,16 +109,24 @@ def set_difficulte():
 
             pygame.display.update()  
     # relier à la config de la difficulté
-    pygame.quit()  
 
-def charger_partie():
-    pygame.init()
-    pygame.display.set_caption("Chargement de la partie ?")
-    win = pygame.display.set_mode((500, 500))
+    #del btn_difficile
+    #del btn_extreme
+    #del btn_facile
+    #del btn_extreme
+
+    return difficulte
+
+def charger_partie(win, largeur, hauteur):
+    # Crée une zone de texte
+    font = pygame.font.Font(None, 40)
+    text_surface = font.render("Voulez-vous charger la partie précédente ?", True, (255,255,255))
+
+    text_rect = text_surface.get_rect(center=(largeur/2, 50))
     
     # Créer des boutons
-    btn_oui = Bouton(50, 50, 150, 50, "Oui")
-    btn_non = Bouton(50, 150, 150, 50, "Non")
+    btn_oui = Bouton((largeur/2)-(150/2), (hauteur/2)-35, 150, 50, "Oui", couleur=(255,255,255), couleur_texte=(0,0,0))
+    btn_non = Bouton((largeur/2)-(150/2), (hauteur/2)+35, 150, 50, "Non",couleur=(255,255,255), couleur_texte=(0,0,0))
 
     running=True
     while running:
@@ -126,19 +139,26 @@ def charger_partie():
                 pos = pygame.mouse.get_pos()
                 case_i = pos[1] 
                 case_j = pos[0]
-                if btn_oui.collidepoint(pos):
+                if btn_oui.rect.collidepoint(pos):
                     load=True
                     running = False
-                if btn_non.collidepoint(pos):
+                if btn_non.rect.collidepoint(pos):
                     load=False
                     running = False
             #Dessiner les boutons
             btn_oui.dessiner(win)
             btn_non.dessiner(win)
 
+            # Dessiner la zone de texte
+            win.blit(text_surface, text_rect)
+
             pygame.display.update()
 
-    pygame.quit()
+    del text_surface
+    del text_rect
+    del btn_oui
+    del btn_non      
+
     return load
 
 
@@ -146,31 +166,46 @@ def interface(largeur=700, hauteur=700, taille=9, grille_=None):
     """
     Crée et gère l'interface graphique (fenêtre) du Sudocul.
     """
-    load=charger_partie()
-    if (load==True):
-        grille_=lire_sauvegarde()
+
+    #---------------------------------------------------------------------------------------------------
+    # Set up interface
+    #---------------------------------------------------------------------------------------------------
     pygame.init()
     cell_size = min(largeur // (taille + 2), hauteur // taille)  # Ajuster la largeur pour inclure les boutons
     largeur = cell_size * (taille + 2)  # Ajuster la largeur pour inclure les boutons
     hauteur = cell_size * taille
     win = pygame.display.set_mode((largeur, hauteur))
     pygame.display.set_caption("Sudocul")
-
+   
+    #---------------------------------------------------------------------------------------------------
+    # Fenêtre de chargement de la partie précédente et choix difficulté
+    #---------------------------------------------------------------------------------------------------
+    load=charger_partie(win, largeur, hauteur)
+    if (load==False):
+        # A MODIF
+        win.fill((0, 0, 0))
+        generation_grille = generateur_grille(9, "123456789")
+        difficulte=choix_difficulte(win, largeur, hauteur)
+        grille_=set_difficulte(generation_grille, difficulte, difficultes, caracteres, 9, 3) # A MODIF
+        largeur=600
+        hauteur=600
+        taille=5
+    
+    #---------------------------------------------------------------------------------------------------
+    # Set up des éléments
+    #---------------------------------------------------------------------------------------------------
     cases_modifiables = set()  # Initialisation des cases modifiables
     case_selectionnee = None  # Initialisation de la case sélectionnée
 
     # Charger les images des boutons
     btn_new_game = pygame.image.load('add.png')
     btn_verif_grid = pygame.image.load('circle.png')
-    btn_save = pygame.image.load('diskette.png')
 
     btn_new_game = pygame.transform.scale(btn_new_game, (80, 80))  # Taille souhaitée : 80x80
     btn_verif_grid = pygame.transform.scale(btn_verif_grid, (80, 80))  # Taille souhaitée : 80x80
-    btn_save = pygame.transform.scale(btn_save, (80, 80))
 
     button1_rect = btn_new_game.get_rect(topleft=(taille * cell_size + 40, 50)) # btn Nouvelle partie
     button2_rect = btn_verif_grid.get_rect(topleft=(taille * cell_size + 40, 175)) # btn Vérif grille
-    button3_rect = btn_save.get_rect(topleft=(taille * cell_size + 40, 300)) # Btn sauvegarder partie
 
     # Initialiser la police pour le texte descriptif
     font = pygame.font.Font(None, 24)
@@ -178,18 +213,19 @@ def interface(largeur=700, hauteur=700, taille=9, grille_=None):
     # Texte descriptif pour les boutons
     button1_text = font.render("Nouvelle partie", True, (0, 0, 0))
     button2_text = font.render("Vérifier la grille", True, (0, 0, 0))
-    button3_text = font.render("Sauvegarder la partie", True, (0, 0, 0))
 
     button1_text_rect = button1_text.get_rect(center=(button1_rect.centerx, button1_rect.bottom + 20))
     button2_text_rect = button2_text.get_rect(center=(button2_rect.centerx, button2_rect.bottom + 20))
-    button3_text_rect = button3_text.get_rect(center=(button3_rect.centerx, button3_rect.bottom + 20))
 
     # Identifier les cases modifiables dans la grille
     for i in range(taille):
         for j in range(taille):
-            if grille_[i][j] == "-":
+            if grille_[i][j] == ".":
                 cases_modifiables.add((i, j))
 
+    #---------------------------------------------------------------------------------------------------
+    # Boucle principale
+    #---------------------------------------------------------------------------------------------------
     running = True
     while running:
         for event in pygame.event.get():
@@ -207,6 +243,15 @@ def interface(largeur=700, hauteur=700, taille=9, grille_=None):
                     # Affichage
                     win.fill((255, 255, 255))
                     grille(win, taille, grille_, cases_modifiables, case_selectionnee)
+
+                    # Dessiner les boutons
+                    win.blit(btn_new_game, button1_rect)
+                    win.blit(btn_verif_grid, button2_rect)
+
+                    # Dessiner le texte descriptif des boutons
+                    win.blit(button1_text, button1_text_rect) # bouton charger partie
+                    win.blit(button2_text, button2_text_rect) # bouton vérifier
+                    
                     pygame.display.update()
 
                     # Vérifier si la case est modifiable
@@ -235,9 +280,6 @@ def interface(largeur=700, hauteur=700, taille=9, grille_=None):
                         
                     elif button2_rect.collidepoint(pos) or button2_text_rect.collidepoint(pos):
                         print("vérification de la grille")
-                    elif button3_rect.collidepoint(pos) or button3_text_rect.collidepoint(pos):
-                        print("sauvegarde")
-                        sauvegarde_grille(grille_)
 
             # Affichage
             win.fill((255, 255, 255))
@@ -246,12 +288,10 @@ def interface(largeur=700, hauteur=700, taille=9, grille_=None):
             # Dessiner les boutons
             win.blit(btn_new_game, button1_rect)
             win.blit(btn_verif_grid, button2_rect)
-            win.blit(btn_save, button3_rect)
 
             # Dessiner le texte descriptif des boutons
             win.blit(button1_text, button1_text_rect) # bouton charger partie
             win.blit(button2_text, button2_text_rect) # bouton vérifier
-            win.blit(button3_text, button3_text_rect) # bouton sauvegarder
 
             pygame.display.update()
 
@@ -259,10 +299,13 @@ def interface(largeur=700, hauteur=700, taille=9, grille_=None):
     sys.exit()
 
 if __name__ == "__main__":
-    grille_ = [["1", "-", "3", "4", "6"],
-               ["5", "6", "-", "8", "7"],
-               ["-", "9", "1", "2", "8"],
-               ["3", "4", "5", "-", "9"],
-               ["3", "4", "-", "8", "9"]
-              ]
+    grille_ = [['6', '.', '9', '3', '4', '.', '7', '8', '2'], 
+               ['3', '4', '5', '7', '8', '.', '6', '1', '9'], 
+               ['7', '8', '2', '.', '1', '9', '3', '4', '5'], 
+               ['1', '6', '.', '9', '3', '8', '2', '5', '4'], 
+               ['9', '3', '8', '2', '5', '4', '1', '6', '7'], 
+               ['2', '5', '4', '1', '.', '7', '.', '3', '8'], 
+               ['8', '9', '6', '4', '2', '1', '5', '7', '3'], 
+               ['4', '2', '.', '5', '7', '.', '8', '9', '6'], 
+               ['5', '7', '3', '8', '9', '6', '4', '2', '1']]
     interface(600, 600, 5, grille_)
