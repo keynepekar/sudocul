@@ -19,7 +19,7 @@ grille2 = set_difficulte(grille, "Extrême", difficultes, caracteres, taille, 3)
 affichage_console(grille2)
 """
 
-grille = lire_sauvegarde()
+'''grille = lire_sauvegarde()
 affichage_console(grille)
 
 print()
@@ -27,4 +27,4 @@ print()
 backtracking(grille, 9, caracteres, 3)
 affichage_console(grille)
 
-sauvegarde_grille(grille)
+sauvegarde_grille(grille)'''
