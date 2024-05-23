@@ -185,15 +185,20 @@ def interface(largeur=700, hauteur=700, taille=9, grille_=None):
     # Fenêtre de chargement de la partie précédente et choix difficulté
     #---------------------------------------------------------------------------------------------------
     load=charger_partie(win, largeur, hauteur)
+    
+    win.fill((0, 0, 0))
+    largeur=600
+    hauteur=600
+    
+    if load == True :
+        grille_ = lire_sauvegarde()
     if (load==False):
         # A MODIF
         win.fill((0, 0, 0))
-        generation_grille = generateur_grille(9, "123456789")
+        generation_grille = generateur_grille(taille)
         difficulte=choix_difficulte(win, largeur, hauteur)
-        grille_=set_difficulte(generation_grille, difficulte, difficultes, caracteres, 9, 3) # A MODIF
-        largeur=600
-        hauteur=600
-        taille=5
+        grille_=set_difficulte(generation_grille, difficulte, taille) # A MODIF
+        sauvegarde_grille(grille_)
     elif (load==None):
         pygame.quit()
         sys.exit()
@@ -205,8 +210,8 @@ def interface(largeur=700, hauteur=700, taille=9, grille_=None):
     case_selectionnee = None  # Initialisation de la case sélectionnée
 
     # Charger les images des boutons
-    btn_new_game = pygame.image.load('add.png')
-    btn_verif_grid = pygame.image.load('circle.png')
+    btn_new_game = pygame.image.load('jeu/interface/assets/add.png')
+    btn_verif_grid = pygame.image.load('jeu/interface/assets/circle.png')
 
     btn_new_game = pygame.transform.scale(btn_new_game, (80, 80))  # Taille souhaitée : 80x80
     btn_verif_grid = pygame.transform.scale(btn_verif_grid, (80, 80))  # Taille souhaitée : 80x80
@@ -288,10 +293,9 @@ def interface(largeur=700, hauteur=700, taille=9, grille_=None):
                         print("lancement d'une nouv partie")
                         # A MODIF
                         win.fill((0, 0, 0))
-                        generation_grille = generateur_grille(9, "123456789")
+                        generation_grille = generateur_grille(taille)
                         difficulte=choix_difficulte(win, largeur, hauteur)
-                        taille=5
-                        grille_=set_difficulte(generation_grille, difficulte, difficultes, caracteres, 9, 3) # A MODIF
+                        grille_=set_difficulte(generation_grille, difficulte, 9) # A MODIF
                         cases_modifiables = set()
                         # Identifier les cases modifiables dans la grille
                         for i in range(taille):
@@ -304,6 +308,11 @@ def interface(largeur=700, hauteur=700, taille=9, grille_=None):
                         
                     elif button2_rect.collidepoint(pos) or button2_text_rect.collidepoint(pos):
                         print("vérification de la grille")
+                        match verif_grille(grille_, taille):
+                            case True : 
+                                print("Résolvable.")
+                                sauvegarde_grille(grille_) # tu me diras si ça te convient
+                            case False : print("Non résolvable.")
 
             # Affichage
             win.fill((255, 255, 255))
