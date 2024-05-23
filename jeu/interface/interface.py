@@ -71,17 +71,19 @@ def grille(win, taille=9, grille_sudoku=None, cases_modifiables=None, case_selec
     pygame.display.update()
 
 def choix_difficulte(win, largeur, hauteur):
+    win.fill((255, 255, 255))
+
     # Créer des boutons
-    btn_facile = Bouton(50, 50, 150, 50, "Facile")
-    btn_moyen = Bouton(200, 50, 150, 50, "Moyen")
-    btn_difficile = Bouton(50, 100, 150, 50, "Difficile")
-    btn_extreme = Bouton(200, 100, 150, 50, "Extreme")
+    btn_facile = Bouton((largeur/2)-(300/2), hauteur/2-60, 150, 50, "Facile")
+    btn_moyen = Bouton(160+(largeur/2)-(300/2), hauteur/2-60, 150, 50, "Moyen")
+    btn_difficile = Bouton((largeur/2)-(300/2), (hauteur/2), 150, 50, "Difficile")
+    btn_extreme = Bouton(160+(largeur/2)-(300/2), (hauteur/2), 150, 50, "Extreme")
 
     running=True
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                load=False
+                difficulte=False
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # Détecter les clics de souris
@@ -118,21 +120,23 @@ def choix_difficulte(win, largeur, hauteur):
     return difficulte
 
 def charger_partie(win, largeur, hauteur):
+    win.fill((255, 255, 255))
+
     # Crée une zone de texte
     font = pygame.font.Font(None, 40)
-    text_surface = font.render("Voulez-vous charger la partie précédente ?", True, (255,255,255))
+    text_surface = font.render("Voulez-vous charger la partie précédente ?", True, (0,0,0))
 
     text_rect = text_surface.get_rect(center=(largeur/2, 50))
     
     # Créer des boutons
-    btn_oui = Bouton((largeur/2)-(150/2), (hauteur/2)-35, 150, 50, "Oui", couleur=(255,255,255), couleur_texte=(0,0,0))
-    btn_non = Bouton((largeur/2)-(150/2), (hauteur/2)+35, 150, 50, "Non",couleur=(255,255,255), couleur_texte=(0,0,0))
+    btn_oui = Bouton((largeur/2)-(150/2), (hauteur/2)-35, 150, 50, "Oui", couleur=(0,0,0), couleur_texte=(255,255,255))
+    btn_non = Bouton((largeur/2)-(150/2), (hauteur/2)+35, 150, 50, "Non",couleur=(0,0,0), couleur_texte=(255,255,255))
 
     running=True
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                load=False
+                load=None
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # Détecter les clics de souris
@@ -190,6 +194,9 @@ def interface(largeur=700, hauteur=700, taille=9, grille_=None):
         largeur=600
         hauteur=600
         taille=5
+    elif (load==None):
+        pygame.quit()
+        sys.exit()
     
     #---------------------------------------------------------------------------------------------------
     # Set up des éléments
@@ -265,6 +272,8 @@ def interface(largeur=700, hauteur=700, taille=9, grille_=None):
                                         number = int(event_key.unicode)
                                         print("Chiffre saisi :", number)
                                         grille_[case_i][case_j] = str(number)
+                                        case_selectionnee=None
+                                        grille(win, taille, grille_, cases_modifiables, case_selectionnee)
                                         break
                             else:
                                 continue
@@ -277,6 +286,21 @@ def interface(largeur=700, hauteur=700, taille=9, grille_=None):
                     print("Clic de souris sur la case :", (case_i, case_j))
                     if button1_rect.collidepoint(pos) or button1_text_rect.collidepoint(pos):
                         print("lancement d'une nouv partie")
+                        # A MODIF
+                        win.fill((0, 0, 0))
+                        generation_grille = generateur_grille(9, "123456789")
+                        difficulte=choix_difficulte(win, largeur, hauteur)
+                        taille=5
+                        grille_=set_difficulte(generation_grille, difficulte, difficultes, caracteres, 9, 3) # A MODIF
+                        cases_modifiables = set()
+                        # Identifier les cases modifiables dans la grille
+                        for i in range(taille):
+                            for j in range(taille):
+                                if grille_[i][j] == ".":
+                                    cases_modifiables.add((i, j))
+                        largeur=600
+                        hauteur=600
+                        
                         
                     elif button2_rect.collidepoint(pos) or button2_text_rect.collidepoint(pos):
                         print("vérification de la grille")
