@@ -29,6 +29,8 @@ class Bouton:
         surface.blit(texte_surface, texte_rect)
 
 
+import pygame
+
 def grille(win, taille=9, grille_sudoku=None, cases_modifiables=None, case_selectionnee=None): 
     """
     Crée une grille d'une certaine taille (9*9 par défaut) avec un nombre de lignes et un 
@@ -68,6 +70,17 @@ def grille(win, taille=9, grille_sudoku=None, cases_modifiables=None, case_selec
                 text_rect = text.get_rect(center=rect.center)
                 win.blit(text, text_rect)
 
+    # Dessiner les lignes épaisses pour les sous-grilles 3x3
+    for i in range(1, taille):
+        if i % 3 == 0:
+            # Ligne horizontale
+            pygame.draw.line(win, (0, 0, 0), (0, i * cell_size), (taille * cell_size, i * cell_size), 3)
+            # Ligne verticale
+            pygame.draw.line(win, (0, 0, 0), (i * cell_size, 0), (i * cell_size, taille * cell_size), 3)
+
+    # Dessiner la bordure extérieure de la grille
+    pygame.draw.rect(win, (0, 0, 0), (0, 0, taille * cell_size, taille * cell_size), 3)
+
     pygame.display.update()
 
 def choix_difficulte(win, largeur, hauteur):
@@ -100,7 +113,7 @@ def choix_difficulte(win, largeur, hauteur):
                     difficulte = "Difficile"
                     running = False
                 if btn_extreme.rect.collidepoint(pos):
-                    difficulte = "Difficile"
+                    difficulte = "Extrême"
                     running = False
 
             #Dessiner les boutons
@@ -109,13 +122,7 @@ def choix_difficulte(win, largeur, hauteur):
             btn_difficile.dessiner(win)
             btn_extreme.dessiner(win)
 
-            pygame.display.update()  
-    # relier à la config de la difficulté
-
-    #del btn_difficile
-    #del btn_extreme
-    #del btn_facile
-    #del btn_extreme
+            pygame.display.update()
 
     return difficulte
 
@@ -165,18 +172,16 @@ def charger_partie(win, largeur, hauteur):
 
     return load
 
-
 def interface(largeur=700, hauteur=700, taille=9, grille_=None):
     """
     Crée et gère l'interface graphique (fenêtre) du Sudocul.
     """
-
     #---------------------------------------------------------------------------------------------------
     # Set up interface
     #---------------------------------------------------------------------------------------------------
     pygame.init()
     cell_size = min(largeur // (taille + 2), hauteur // taille)  # Ajuster la largeur pour inclure les boutons
-    largeur = cell_size * (taille + 2)  # Ajuster la largeur pour inclure les boutons
+    largeur = cell_size * (taille + 3)  # A MODIF ??
     hauteur = cell_size * taille
     win = pygame.display.set_mode((largeur, hauteur))
     pygame.display.set_caption("Sudocul")
@@ -193,16 +198,15 @@ def interface(largeur=700, hauteur=700, taille=9, grille_=None):
     if load == True :
         grille_ = lire_sauvegarde()
     if (load==False):
-        # A MODIF
         win.fill((0, 0, 0))
         generation_grille = generateur_grille(taille)
         difficulte=choix_difficulte(win, largeur, hauteur)
-        grille_=set_difficulte(generation_grille, difficulte, taille) # A MODIF
+        grille_=set_difficulte(generation_grille, difficulte, taille)
         sauvegarde_grille(grille_)
     elif (load==None):
         pygame.quit()
         sys.exit()
-    
+
     #---------------------------------------------------------------------------------------------------
     # Set up des éléments
     #---------------------------------------------------------------------------------------------------
@@ -234,7 +238,77 @@ def interface(largeur=700, hauteur=700, taille=9, grille_=None):
         for j in range(taille):
             if grille_[i][j] == ".":
                 cases_modifiables.add((i, j))
+    
+    def affich_verif(message):
+        # Dimensions de la pop-up
+        pop_largeur, pop_hauteur = 300, 200
+        popup_screen = pygame.Surface((pop_largeur, pop_hauteur))
 
+        # Couleurs
+        BLANC = (255, 255, 255)
+        NOIR = (0, 0, 0)
+        GRIS = (200, 200, 200)
+        VERT = (0, 255, 0)
+        
+        # Définir la position de la pop-up au centre de la fenêtre principale
+        popup_x = (largeur - pop_largeur) // 2
+        popup_y = (hauteur - pop_hauteur-100) // 2
+
+        # Remplir la pop-up avec une couleur de fond
+        popup_screen.fill(GRIS) # Couleur grise
+        
+        font = pygame.font.Font(None, 24)
+        
+        # Rendre le texte du message
+        text_surface = font.render(message, True, NOIR) # Couleur noire
+        
+        # Centrer le texte dans la pop-up
+        text_rect = text_surface.get_rect(center=(pop_largeur//2, pop_hauteur//2 - 20))
+        popup_screen.blit(text_surface, text_rect)
+
+        # Créer un bouton OK
+        ok_button = pygame.Rect(100, 120, 100, 50)
+        pygame.draw.rect(popup_screen, VERT, ok_button)
+        font = pygame.font.Font(None, 24)
+        ok_text = font.render("Ok", True, NOIR)
+        ok_text_rect = ok_text.get_rect(center=ok_button.center)
+        popup_screen.blit(ok_text, ok_text_rect)
+        
+        # Afficher la pop-up
+        win.blit(popup_screen, (popup_x, popup_y))
+        pygame.display.flip()
+
+        pop_running=True
+        while pop_running:
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    print("ok1")
+                    pos = pygame.mouse.get_pos()
+                    x=pos[0]
+                    y=pos[1]
+                    print((x-pop_largeur/2, y-pop_hauteur/2-50))
+                    print(pos)
+                    if ok_button.collidepoint((x-pop_largeur/2, y-pop_hauteur/2-50)):
+                        pop_running=False
+
+        pygame.display.flip()
+
+    def dessiner():
+        # Affichage
+        win.fill((255, 255, 255))
+        grille(win, taille, grille_, cases_modifiables, case_selectionnee)
+
+        # Dessiner les boutons
+        win.blit(btn_new_game, button1_rect)
+        win.blit(btn_verif_grid, button2_rect)
+
+        # Dessiner le texte descriptif des boutons
+        win.blit(button1_text, button1_text_rect) # bouton charger partie
+        win.blit(button2_text, button2_text_rect) # bouton vérifier
+                    
+        pygame.display.update()
+    
+    dessiner()
     #---------------------------------------------------------------------------------------------------
     # Boucle principale
     #---------------------------------------------------------------------------------------------------
@@ -252,37 +326,8 @@ def interface(largeur=700, hauteur=700, taille=9, grille_=None):
                     print("Clic de souris sur la case :", (case_i, case_j))
                     # Mettre à jour la case sélectionnée
                     case_selectionnee = (case_i, case_j)
-                    # Affichage
-                    win.fill((255, 255, 255))
-                    grille(win, taille, grille_, cases_modifiables, case_selectionnee)
-
-                    # Dessiner les boutons
-                    win.blit(btn_new_game, button1_rect)
-                    win.blit(btn_verif_grid, button2_rect)
-
-                    # Dessiner le texte descriptif des boutons
-                    win.blit(button1_text, button1_text_rect) # bouton charger partie
-                    win.blit(button2_text, button2_text_rect) # bouton vérifier
+                    dessiner()
                     
-                    pygame.display.update()
-
-                    # Vérifier si la case est modifiable
-                    if (case_i, case_j) in cases_modifiables:
-                        # Gérer la saisie des nombres
-                        pygame.event.clear(pygame.KEYDOWN)  
-                        while True:
-                            for event_key in pygame.event.get():
-                                if event_key.type == pygame.KEYDOWN:
-                                    if event_key.unicode.isdigit():
-                                        number = int(event_key.unicode)
-                                        print("Chiffre saisi :", number)
-                                        grille_[case_i][case_j] = str(number)
-                                        case_selectionnee=None
-                                        grille(win, taille, grille_, cases_modifiables, case_selectionnee)
-                                        break
-                            else:
-                                continue
-                            break
                 else:
                     # Détecter les clics de souris
                     pos = pygame.mouse.get_pos()
@@ -291,11 +336,10 @@ def interface(largeur=700, hauteur=700, taille=9, grille_=None):
                     print("Clic de souris sur la case :", (case_i, case_j))
                     if button1_rect.collidepoint(pos) or button1_text_rect.collidepoint(pos):
                         print("lancement d'une nouv partie")
-                        # A MODIF
                         win.fill((0, 0, 0))
                         generation_grille = generateur_grille(taille)
                         difficulte=choix_difficulte(win, largeur, hauteur)
-                        grille_=set_difficulte(generation_grille, difficulte, 9) # A MODIF
+                        grille_=set_difficulte(generation_grille, difficulte, 9)
                         cases_modifiables = set()
                         # Identifier les cases modifiables dans la grille
                         for i in range(taille):
@@ -303,8 +347,7 @@ def interface(largeur=700, hauteur=700, taille=9, grille_=None):
                                 if grille_[i][j] == ".":
                                     cases_modifiables.add((i, j))
                         largeur=600
-                        hauteur=600
-                        
+                        hauteur=600                        
                         
                     elif button2_rect.collidepoint(pos) or button2_text_rect.collidepoint(pos):
                         print("vérification de la grille")
@@ -312,21 +355,23 @@ def interface(largeur=700, hauteur=700, taille=9, grille_=None):
                             case True : 
                                 print("Résolvable.")
                                 sauvegarde_grille(grille_) # tu me diras si ça te convient
-                            case False : print("Non résolvable.")
+                                affich_verif("La grille est résolvable")
+                                dessiner()
+                            case False : 
+                                print("Non résolvable.")
+                                affich_verif("La grille est non résolvable")
+                                dessiner()
 
-            # Affichage
-            win.fill((255, 255, 255))
-            grille(win, taille, grille_, cases_modifiables, case_selectionnee)
-            
-            # Dessiner les boutons
-            win.blit(btn_new_game, button1_rect)
-            win.blit(btn_verif_grid, button2_rect)
-
-            # Dessiner le texte descriptif des boutons
-            win.blit(button1_text, button1_text_rect) # bouton charger partie
-            win.blit(button2_text, button2_text_rect) # bouton vérifier
-
-            pygame.display.update()
+            # Vérifier si la case est modifiable
+            elif event.type == pygame.KEYDOWN and case_selectionnee is not None:
+                if event.unicode.isdigit():
+                    number = int(event.unicode)
+                    case_i, case_j = case_selectionnee
+                    if (case_i, case_j) in cases_modifiables:
+                        print("Chiffre saisi :", number)
+                        grille_[case_i][case_j] = str(number)
+                        case_selectionnee = None
+                        dessiner()
 
     pygame.quit()
     sys.exit()
