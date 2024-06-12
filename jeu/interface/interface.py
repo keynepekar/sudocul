@@ -19,6 +19,7 @@ class Bouton:
         self.couleur = couleur
         self.couleur_texte = couleur_texte
         self.police = pygame.font.Font(None, 24)
+        
 
     def dessiner(self, surface):
         # Dessiner le rectangle du bouton
@@ -28,8 +29,18 @@ class Bouton:
         texte_rect = texte_surface.get_rect(center=self.rect.center)
         surface.blit(texte_surface, texte_rect)
 
-
-import pygame
+class Surface:
+    def __init__(self, x, y, largeur, hauteur):
+        self.surface = pygame.Surface((largeur, hauteur))
+        self.surface.set_alpha(0)
+        self.surface.fill((255,255,255))
+        self.rect = pygame.Rect(x, y, largeur, hauteur)
+        
+    def dessiner(self, surface):
+        surface.blit(self.surface, (0,0))
+        
+    def collidepoint(self, point):
+        return self.rect.collidepoint(point)
 
 def grille(win, taille=9, grille_sudoku=None, cases_modifiables=None, case_selectionnee=None): 
     """
@@ -86,11 +97,14 @@ def grille(win, taille=9, grille_sudoku=None, cases_modifiables=None, case_selec
 def choix_difficulte(win, largeur, hauteur):
     win.fill((255, 255, 255))
 
+    bg = pygame.image.load("jeu/interface/assets/choix_diff_bg.png")
+    win.blit(bg, (0, 0))
+
     # Créer des boutons
-    btn_facile = Bouton((largeur/2)-(300/2), hauteur/2-60, 150, 50, "Facile")
-    btn_moyen = Bouton(160+(largeur/2)-(300/2), hauteur/2-60, 150, 50, "Moyen")
-    btn_difficile = Bouton((largeur/2)-(300/2), (hauteur/2), 150, 50, "Difficile")
-    btn_extreme = Bouton(160+(largeur/2)-(300/2), (hauteur/2), 150, 50, "Extreme")
+    btn_facile = Surface(105, 270, 345, 65)
+    btn_moyen = Surface(475, 270, 345, 65)
+    btn_difficile = Surface(105, 350, 345, 65)
+    btn_extreme = Surface(475, 350, 345, 65)
 
     running=True
     while running:
@@ -101,6 +115,7 @@ def choix_difficulte(win, largeur, hauteur):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # Détecter les clics de souris
                 pos = pygame.mouse.get_pos()
+                print(pos)
                 case_i = pos[1] 
                 case_j = pos[0]
                 if btn_facile.rect.collidepoint(pos):
@@ -128,16 +143,12 @@ def choix_difficulte(win, largeur, hauteur):
 
 def charger_partie(win, largeur, hauteur):
     win.fill((255, 255, 255))
-
-    # Crée une zone de texte
-    font = pygame.font.Font(None, 40)
-    text_surface = font.render("Voulez-vous charger la partie précédente ?", True, (0,0,0))
-
-    text_rect = text_surface.get_rect(center=(largeur/2, 50))
+    bg = pygame.image.load("jeu/interface/assets/menu_bg.png")
+    win.blit(bg, (0, 0))
     
     # Créer des boutons
-    btn_oui = Bouton((largeur/2)-(150/2), (hauteur/2)-35, 150, 50, "Oui", couleur=(0,0,0), couleur_texte=(255,255,255))
-    btn_non = Bouton((largeur/2)-(150/2), (hauteur/2)+35, 150, 50, "Non",couleur=(0,0,0), couleur_texte=(255,255,255))
+    btn_non = Surface(290, 375, 345, 65)
+    btn_oui = Surface(290, 445, 345, 65)
 
     running=True
     while running:
@@ -148,25 +159,21 @@ def charger_partie(win, largeur, hauteur):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # Détecter les clics de souris
                 pos = pygame.mouse.get_pos()
+                print(pos)
                 case_i = pos[1] 
                 case_j = pos[0]
-                if btn_oui.rect.collidepoint(pos):
+                if btn_oui.collidepoint(pos):
                     load=True
                     running = False
-                if btn_non.rect.collidepoint(pos):
+                if btn_non.collidepoint(pos):
                     load=False
                     running = False
             #Dessiner les boutons
             btn_oui.dessiner(win)
             btn_non.dessiner(win)
 
-            # Dessiner la zone de texte
-            win.blit(text_surface, text_rect)
-
             pygame.display.update()
 
-    del text_surface
-    del text_rect
     del btn_oui
     del btn_non      
 
@@ -185,6 +192,7 @@ def interface(largeur=700, hauteur=700, taille=9, grille_=None):
     hauteur = cell_size * taille
     win = pygame.display.set_mode((largeur, hauteur))
     pygame.display.set_caption("Sudocul")
+    bg = pygame.image.load("jeu/interface/assets/gameplay_bg.png")
    
     #---------------------------------------------------------------------------------------------------
     # Fenêtre de chargement de la partie précédente et choix difficulté
@@ -296,6 +304,7 @@ def interface(largeur=700, hauteur=700, taille=9, grille_=None):
     def dessiner():
         # Affichage
         win.fill((255, 255, 255))
+        win.blit(bg, (0, 0))
         grille(win, taille, grille_, cases_modifiables, case_selectionnee)
 
         # Dessiner les boutons

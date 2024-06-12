@@ -10,4 +10,4 @@ from jeu.interface.interface import *
 
 
 if __name__ == "__main__":
-    interface(600, 600, 9)
+    interface(925, 695, 9)
