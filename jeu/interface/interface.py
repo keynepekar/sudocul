@@ -68,11 +68,11 @@ def grille(win, taille=9, grille_sudoku=None, cases_modifiables=None, case_selec
             # Dessiner les cases
             rect = pygame.Rect(j * cell_size, i * cell_size, cell_size, cell_size)
             pygame.draw.rect(win, (255, 255, 255), rect, 2)
-            pygame.draw.rect(win, (166, 166, 166), rect, 1)
+            pygame.draw.rect(win, (244, 234, 228), rect, 1)
 
             # Colorier la case si elle est sélectionnée
             if (i, j) == case_selectionnee:
-                pygame.draw.rect(win, (187, 222, 251), rect)
+                pygame.draw.rect(win, (247, 166, 162), rect)
 
             # Afficher les nombres dans les cases
             if grille_sudoku[i][j] != ".":
@@ -85,7 +85,7 @@ def grille(win, taille=9, grille_sudoku=None, cases_modifiables=None, case_selec
     for i in range(1, taille):
         if i % 3 == 0:
             # Ligne horizontale
-            pygame.draw.line(win, (0, 0, 0), (0, i * cell_size), (taille * cell_size, i * cell_size), 3)
+            pygame.draw.line(win, (0, 0, 0), (0, i * cell_size), (taille * cell_size - 1, i * cell_size), 3)
             # Ligne verticale
             pygame.draw.line(win, (0, 0, 0), (i * cell_size, 0), (i * cell_size, taille * cell_size), 3)
 
