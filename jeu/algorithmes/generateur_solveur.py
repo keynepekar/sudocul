@@ -85,6 +85,11 @@ def generateur_grille(taille: int, caracteres: str = config.caracteres) -> list:
 
     grille = [["." for _ in range(taille)] for _ in range(taille)]
     taille_bloc = int(sqrt(taille))
+    
+    # On dispose quelques nombres aléatoires pour un backtracking également random.
+    ligne_random = list(caracteres)
+    shuffle(ligne_random)
+    grille[0] = ligne_random
 
     backtracking(grille, taille)
     return grille
@@ -93,6 +98,16 @@ def verif_grille(grille: list, taille : int) -> bool:
     """
         Vérifie si une grille être résolvable en l'état.
         On traite sur une copie profonde locale de la grille pour ne pas la flinguer avec le backtracking.
+        On vérifie également si la grille a bien été traitée jusqu'à présent.
     """
+    # Test des placements effectués
+    for i in range(taille):
+        for j in range(taille):
+            elem = grille[i][j]
+            if elem == "." : continue
+            if grille[i].count(elem) + grille[:][j].count(elem) > 2: return False
+            if [grille[pos[0]][pos[1]] for pos in positions_bloc(i, j, int(sqrt(taille)))].count(elem) > 1 : return False
+    
+    # Test de backtracking
     grille_copy = copy.deepcopy(grille)
     return backtracking(grille_copy, taille)
